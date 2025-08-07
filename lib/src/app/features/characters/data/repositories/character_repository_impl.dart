@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/data/datasources/characters_remote_datasource.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/data/models/character_model.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/domain/dtos/character_params.dart';
@@ -19,8 +20,11 @@ class CharactersRepositoryImpl implements ICharactersRepository {
       CharactersParams params) async {
     try {
       final response = await _charactersRemoteDatasource.getCharacters(params);
-      final List<dynamic> results = response.data['results'] as List<dynamic>;
-      final characters = results
+      final results = response.data['results'];
+      if (results == null) {
+        return const Success(<CharacterEntity>[]);
+      }
+      final characters = (results as List<dynamic>)
           .map((item) => CharacterModel.fromMap(item as Map<String, dynamic>))
           .toList();
       return Success(characters);

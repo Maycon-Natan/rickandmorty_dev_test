@@ -2,7 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/domain/dtos/character_params.dart';
-import 'package:teste_tecnico_fteam/src/app/features/characters/domain/entities/character_entity.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/presentation/bloc/characters_bloc.dart';
 import 'package:teste_tecnico_fteam/src/core/DI/dependency_injector.dart';
 
@@ -14,31 +13,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final characterBloc = injector<CharactersBloc>();
-  List<CharacterEntity> characters = [];
+  late CharactersBloc characterBloc;
   final scrollController = ScrollController();
   bool isLoading = false;
-  int page = 1;
 
   @override
   void initState() {
+    super.initState();
+    characterBloc = injector<CharactersBloc>();
     characterBloc.add(GetCharactersEvent(
-      params: CharactersParams(page: page.toString()),
+      params: CharactersParams(page: characterBloc.page.toString()),
     ));
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
           scrollController.position.maxScrollExtent) {
-        if (!isLoading) {
+        if (!isLoading && !characterBloc.hasReachedEnd) {
           isLoading = true;
-          page++;
           characterBloc.add(GetCharactersEvent(
-            params: CharactersParams(page: page.toString()),
+            params: CharactersParams(page: characterBloc.nextPage.toString()),
           ));
         }
       }
     });
+  }
 
-    super.initState();
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,7 +64,6 @@ class _HomePageState extends State<HomePage> {
               );
             }
             if (state is GetCharactersSuccess) {
-              characters += state.charactersResponse;
               isLoading = false;
             }
           },
@@ -71,7 +72,8 @@ class _HomePageState extends State<HomePage> {
             if (state is CharactersLoading) {
               const CircularProgressIndicator();
             }
-            if (characters.isEmpty && state is! CharactersLoading) {
+            if (characterBloc.characters.isEmpty &&
+                state is! CharactersLoading) {
               return const Center(
                 child: Text('Nenhum personagem encontrado',
                     style: TextStyle(fontSize: 18, color: Colors.white)),
@@ -86,8 +88,9 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Expanded(
                     child: GridView.builder(
-                      itemCount:
-                          isLoading ? characters.length + 2 : characters.length,
+                      itemCount: isLoading
+                          ? characterBloc.characters.length + 2
+                          : characterBloc.characters.length,
                       shrinkWrap: true,
                       controller: scrollController,
                       gridDelegate:
@@ -97,8 +100,8 @@ class _HomePageState extends State<HomePage> {
                               crossAxisSpacing: 10,
                               childAspectRatio: 0.8),
                       itemBuilder: (context, index) {
-                        if (index < characters.length) {
-                          final character = characters[index];
+                        if (index < characterBloc.characters.length) {
+                          final character = characterBloc.characters[index];
                           return InkWell(
                             onTap: () {
                               context.go('/character', extra: character);
