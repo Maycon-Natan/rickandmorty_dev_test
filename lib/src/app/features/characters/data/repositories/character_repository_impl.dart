@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/data/datasources/characters_remote_datasource.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/data/models/character_model.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/domain/dtos/character_params.dart';

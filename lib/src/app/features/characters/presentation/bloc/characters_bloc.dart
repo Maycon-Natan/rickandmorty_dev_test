@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/domain/dtos/character_params.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/domain/entities/character_entity.dart';
 import 'package:teste_tecnico_fteam/src/app/features/characters/domain/usecases/characters_usecase.dart';
